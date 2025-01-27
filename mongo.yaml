@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels: # additional identifier of the components in addition to the name for example. You can identify and address specific componenents using the labels
+    app: mongo
+spec:
+  replicas: 1 # how many Pods you want to create (using the template blueprint, below)
+  selector: # match all Pods with label "app:mongo" (above, in deployment, below, in template)
+    matchLabels:
+      app: mongo
+  template: # a configuration of the Pod within the configuration of deployment (has its own metedata and spec as Deployment)
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers: # we could have multiple containers in a Pod
+        - name: mongodb # the image to create the Pod
+          image: mongo:5.0
+          ports:
+            - containerPort: 27017 # the port where the container will listen
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-user
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service # the name of the service. It is the end point which we will use to access mongo (defined in mongo-config)
+spec:
+  selector: # select Pods to forward the requests to. This is how the service and pod will find each other
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017 # service port
+      targetPort: 27017 # containerPort of Deployment

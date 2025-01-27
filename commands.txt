@@ -1,0 +1,35 @@
+kubectl get node
+
+# ConfigMap and Secret must exist before Deployments.
+# kubectl apply -f <file-name.yaml> -> apply manages applications through files defining K8s resources.
+kubectl apply -f mongo-config.yaml
+kubectl apply -f mongo-secret.yaml
+
+# crete first database because the application depends on it.
+kubectl apply -f mongo.yaml # deployment and service are created
+
+# deploy the web application.
+kubectl apply -f webapp.yaml
+
+# get all components created in the cluster (deployment, pods, services)
+kubectl get all
+
+kubectl get configmap
+kubectl get secret
+
+kubectl describe service webapp-service
+
+kubectl logs <podName>
+
+# get the services (to see their IPs)
+kubectl get svc
+# the ports of the webapp-service are 3000:30100/TCP
+
+# how to access the service from the browser? We need the IP of the Cluster Node. In this case there is only one Node, which is minikube.
+# get IP address of minikube
+minikube ip OR kubectl get node -o wide
+
+# if the IP of the Cluster Node is 192.168.49.2 and the port of the app Service is 30100, you could open the app with the browser at 192.168.49.2:30100
+
+# this fix the problem where the app cannot be opened using the ip and port above
+minikube service webapp-service --url
